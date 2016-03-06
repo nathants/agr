@@ -1,3 +1,5 @@
+##### agr
+
 like ack or ag, but for search and replace. operates from the root
 of a git repo, and fails if not run within a git repo. shows a preview
 of the replacements to be made, and prompts to continue.
@@ -48,3 +50,15 @@ $ agr -h
 >   -s, --short    show shorter diffs (default: False)
 >   -y, --yes      commit without prompting (default: False)
 ```
+
+##### a simpler alternative without python
+ - notes:
+   - a bash script depending on only ag and sed
+   - no word diff colorization
+   - no short diffs
+   - no --help
+ - installation:
+   - curl https://raw.githubusercontent.com/nathants/agr/master/agr/agr.sh > /usr/local/bin/agr && chmod +x /usr/local/bin/agr
+ - usage:
+   - `$ agr '(\w+)_factory' '\1_factory_factory' [yes|no]`
+   - the third argument, when yes, commits with prompting, when no, exits without prompting to commit, and when absent, prompts before committing.
