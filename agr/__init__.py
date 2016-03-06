@@ -30,7 +30,7 @@ def _ag(pattern):
         sys.exit(1)
 
 
-def _match(pattern):
+def _matches(pattern):
     matches = [(path, num)
                for line in _ag(pattern).splitlines()
                for path, num, _ in [line.split(':', 2)]]
@@ -46,7 +46,6 @@ def _match(pattern):
 def _update(path, nums, pattern, replacement, short):
     with open(path) as f:
         lines = f.read().splitlines()
-    diffs = []
     for num in nums:
         line = lines[num]
         assert re.search(pattern, line), 'python didnt find a match that ag found for %(path)s:%(num)s' % locals()
@@ -56,23 +55,17 @@ def _update(path, nums, pattern, replacement, short):
         news = [re.sub(pattern, replacement, x) for x in olds]
         lines[num] = ''.join(sum(zip([''] + news, unchanged), ()))
         if short:
-            diffs.append(yellow(path) + ':' + yellow(str(num)) + ': ' + ', '.join('%s => %s' % (red(old), green(new)) for old, new in zip(olds, news)))
+            print(yellow(path) + ':' + yellow(str(num)) + ': ' + ', '.join('%s => %s' % (red(old), green(new)) for old, new in zip(olds, news)))
         else:
             old = ''.join(sum(zip([''] + list(map(red, olds)), unchanged), ())).strip()
             new = ''.join(sum(zip([''] + list(map(green, news)), unchanged), ())).strip()
-            diffs.append(yellow(path) + ':' + yellow(str(num)) + ': ' + '%(old)s => %(new)s' % locals())
-    return lines, diffs
+            print(yellow(path) + ':' + yellow(str(num)) + ': ' + '%(old)s => %(new)s' % locals())
+    return lines
 
 
 def _get_updates(pattern, replacement, short):
     return [(path, _update(path, nums, pattern, replacement, short))
-            for path, nums in _match(pattern)]
-
-
-def _show_diffs(updates):
-    for path, (_, diffs) in updates:
-        for diff in diffs:
-            print(diff)
+            for path, nums in _matches(pattern)]
 
 
 def _commit(updates, yes):
@@ -81,7 +74,7 @@ def _commit(updates, yes):
         if pager.getch() != 'y':
             print('abort')
             sys.exit(1)
-    for path, (lines, _) in updates:
+    for path, lines in updates:
         with open(path, 'w') as f:
             f.write('\n'.join(lines) + '\n')
         print('updated:', path)
@@ -92,8 +85,7 @@ def _main(pattern: 'regex to match',
           replacement: 'replacement for matches',
           preview: 'show diffs and then exit without prompting for commit' = False,
           short: 'show shorter diffs' = False,
-          yes: 'commit with prompting' = False,
-          no_diff: 'do not show diff' = False):
+          yes: 'commit with prompting' = False):
     """
 
     like ack or ag, but for search and replace. operates from the root
@@ -107,8 +99,6 @@ def _main(pattern: 'regex to match',
     """
     _climb_to_git_root()
     updates = _get_updates(pattern, replacement, short)
-    if not no_diff:
-        _show_diffs(updates)
     if not preview:
         _commit(updates, yes)
 
