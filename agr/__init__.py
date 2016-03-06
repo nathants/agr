@@ -85,7 +85,7 @@ def _main(pattern: 'regex to match',
           replacement: 'replacement for matches',
           preview: 'show diffs and then exit without prompting for commit' = False,
           short: 'show shorter diffs' = False,
-          yes: 'commit with prompting' = False):
+          yes: 'commit without prompting' = False):
     """
 
     like ack or ag, but for search and replace. operates from the root

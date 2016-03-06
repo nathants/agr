@@ -46,5 +46,5 @@ $ agr -h
 >   -h, --help     show this help message and exit
 >   -p, --preview  show diffs and then exit without prompting for commit (default: False)
 >   -s, --short    show shorter diffs (default: False)
->   -y, --yes      commit with prompting (default: False)
+>   -y, --yes      commit without prompting (default: False)
 ```
