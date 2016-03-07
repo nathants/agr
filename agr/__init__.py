@@ -34,9 +34,13 @@ def _main(pattern: 'regex to match',
         if '.git' in os.listdir():
             break
         os.chdir('..')
-    matches = [(path, num)
-               for line in subprocess.check_output(['ag', pattern]).decode('utf-8').strip().splitlines()
-               for path, num, _ in [line.split(':', 2)]]
+    try:
+        matches = [(path, num)
+                   for line in subprocess.check_output(['ag', pattern]).decode('utf-8').strip().splitlines()
+                   for path, num, _ in [line.split(':', 2)]]
+    except subprocess.CalledProcessError:
+        print('no matches')
+        sys.exit(1)
     matches = sorted(matches, key=lambda x: x[0])
     matches = itertools.groupby(matches, key=lambda x: x[0])
     matches = [(path, [int(num) - 1
