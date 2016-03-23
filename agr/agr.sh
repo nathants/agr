@@ -22,7 +22,7 @@ done
 pattern=$1
 replacement=$2
 doit=$3
-matches=$(ag ${pattern})
+matches=$(ag -s ${pattern})
 
 echo "${matches}" | while read name; do
     path=$(echo $name|cut -d: -f1)

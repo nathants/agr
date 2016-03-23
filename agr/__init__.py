@@ -36,7 +36,7 @@ def _main(pattern: 'regex to match',
         os.chdir('..')
     try:
         matches = [(path, num)
-                   for line in subprocess.check_output(['ag', pattern]).decode('utf-8').strip().splitlines()
+                   for line in subprocess.check_output(['ag', '-s', pattern]).decode('utf-8').strip().splitlines()
                    for path, num, _ in [line.split(':', 2)]]
     except subprocess.CalledProcessError:
         print('no matches')
