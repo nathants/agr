@@ -22,12 +22,12 @@ done
 pattern=$1
 replacement=$2
 doit=$3
-matches=$(ag -s ${pattern})
+matches=$(ag -s "${pattern}")
 
 echo "${matches}" | while read name; do
     path=$(echo $name|cut -d: -f1)
     num=$(echo $name|cut -d: -f2)
-    echo ${path}:${num} $(sed -n "${num}p" "${path}") '=>' $(sed -r "${num}s:${pattern}:${replacement}:g" "$path")
+    echo ${path}:${num} $(sed -n "${num}p" "${path}") '=>' $(sed -rn "${num}s:${pattern}:${replacement}:gp" "$path")
 done
 
 if [ "${doit}" = "no" ]; then
