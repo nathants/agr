@@ -15,6 +15,7 @@ def _main(pattern: 'regex to match',
           replacement: 'replacement for matches',
           preview: 'show diffs and then exit without prompting for commit' = False,
           short: 'show shorter diffs' = False,
+          no_climb_git_root: 'dont cd upwards until a .git dir is found' = False,
           yes: 'commit without prompting' = False):
     """
 
@@ -27,13 +28,14 @@ def _main(pattern: 'regex to match',
     $ agr -h
 
     """
-    while True:
-        if os.getcwd() == '/':
-            print('failed to find git root')
-            sys.exit(1)
-        if '.git' in os.listdir():
-            break
-        os.chdir('..')
+    if not no_climb_git_root:
+        while True:
+            if os.getcwd() == '/':
+                print('failed to find git root')
+                sys.exit(1)
+            if '.git' in os.listdir():
+                break
+            os.chdir('..')
     try:
         matches = [(path, num)
                    for line in subprocess.check_output(['ag', '-s', pattern]).decode('utf-8').strip().splitlines()
