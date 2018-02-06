@@ -15,6 +15,7 @@ def _main(pattern: 'regex to match',
           replacement: 'replacement for matches',
           preview: 'show diffs and then exit without prompting for commit' = False,
           short: 'show shorter diffs' = False,
+          unrestricted: 'process all files, not just code files' = False,
           no_climb_git_root: 'dont cd upwards until a .git dir is found' = False,
           yes: 'commit without prompting' = False):
     """
@@ -36,10 +37,12 @@ def _main(pattern: 'regex to match',
             if '.git' in os.listdir():
                 break
             os.chdir('..')
+    split = re.compile(r':(\d+):').split
     try:
         matches = [(path, num)
-                   for line in subprocess.check_output(['ag', '-s', pattern]).decode('utf-8').strip().splitlines()
-                   for path, num, _ in [line.split(':', 2)]]
+                   for line in subprocess.check_output(['ag'] + (['-u'] if unrestricted else []) + ['-s', pattern]).decode('utf-8').strip().splitlines()
+                   if len(split(line, 1)) == 3
+                   for path, num, _ in [split(line, 1)]]
     except subprocess.CalledProcessError:
         print('no matches')
         sys.exit(1)
@@ -47,7 +50,7 @@ def _main(pattern: 'regex to match',
     matches = itertools.groupby(matches, key=lambda x: x[0])
     matches = [(path, [int(num) - 1
                        for _, num in nums
-                       if num.isdigit()]) # paths with ":" in them a skipped
+                       if num.isdigit()])
                for path, nums in matches]
     matches = [(path, nums) for path, nums in matches if nums]
     def update(path, nums):
