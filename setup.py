@@ -8,9 +8,7 @@ setuptools.setup(
     author='nathan todd-stone',
     author_email='me@nathants.com',
     url='http://github.com/nathants/agr',
-    packages=['agr'],
-    install_requires=['argh',
-                      'pager'],
-    entry_points={'console_scripts': ['agr = agr:main']},
+    install_requires=['argh'],
+    scripts=['agr'],
     description='agr',
 )

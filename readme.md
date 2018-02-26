@@ -1,20 +1,20 @@
 ##### agr
 
-like ack or ag, but for search and replace. operates from the root
-of a git repo, and fails if not run within a git repo. shows a preview
-of the replacements to be made, and prompts to continue.
+like ack or ag, but for search and replace. can climb to the root of a
+git repo before running. shows a preview of the replacements to be
+made, and prompts to continue globally or at each change site.
 
-installation: `pip3 install https://github.com/nathants/agr`
-alternate installation: `git clone https://github.com/nathants/agr && cd agr && python3 setup.py install`
+installation methods:
+ - `pip3 install https://github.com/nathants/agr@ab822da`
+ - `git clone https://github.com/nathants/agr && cd agr && python3 setup.py develop`
 
 usage: `agr '(\w+)_factory' '\1_factory_factory'`
 
 usage: `agr -h`
 
-notes:
- - depends on [silver-search (ag)](https://github.com/ggreer/the_silver_searcher) being available.
- - depends on python3.4+, but probably works with other pythons with or without minor modifications.
- - diffs are colorized for ease of reading.
+depends on:
+ - [silver-search (ag)](https://github.com/ggreer/the_silver_searcher) being available.
+ - python3.4+
 
 examples:
 
@@ -38,27 +38,19 @@ $ agr '(\w+)_factory' '\1_factory_factory' --short
 
 ```
 $ agr -h
-> usage: agr [-h] [-p] [-s] [-y] [-n] pattern replacement
+> usage: agr [-h] [-p] [-s] [-u] [-n] [-y] [-e] pattern replacement
 >
 > positional arguments:
->   pattern        regex to match
->   replacement    replacement for matches
+>   pattern             regex to match
+>   replacement         replacement for matches
 >
 > optional arguments:
->   -h, --help     show this help message and exit
->   -p, --preview  show diffs and then exit without prompting for commit (default: False)
->   -s, --short    show shorter diffs (default: False)
->   -y, --yes      commit without prompting (default: False)
-```
+>   -h, --help          show this help message and exit
+>   -p, --preview       show diffs and then exit without prompting for commit (default: False)
+>   -s, --short         show shorter diffs (default: False)
+>   -u, --unrestricted  process all files, not just code files (default: False)
+>   -n, --no-climb      dont cd upwards until a .git dir is found (default: False)
+>   -y, --yes           commit without prompting (default: False)
+>   -e, --each          prompt for y/n at each change site (default: False)
 
-##### a simpler alternative without python
- - notes:
-   - a bash script depending on only ag and sed
-   - no word diff colorization
-   - no short diffs
-   - no --help
- - installation:
-   - curl https://raw.githubusercontent.com/nathants/agr/master/agr/agr.sh > /usr/local/bin/agr && chmod +x /usr/local/bin/agr
- - usage:
-   - `$ agr '(\w+)_factory' '\1_factory_factory' [yes|no]`
-   - the third argument, when yes, commits with prompting, when no, exits without prompting to commit, and when absent, prompts before committing.
+```

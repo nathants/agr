@@ -1,35 +1,61 @@
+#!/usr/bin/env python3
 import argh
 import itertools
 import os
-import pager
 import re
 import subprocess
 import sys
+import termios
+import tty
 
 red    = lambda x: "\033[31m%s\033[0m" % x
 green  = lambda x: "\033[32m%s\033[0m" % x
 yellow = lambda x: "\033[33m%s\033[0m" % x
 
+def getch():
+    fd = sys.stdin.fileno()
+    old = termios.tcgetattr(fd)
+    try:
+        tty.setraw(fd)
+        val = sys.stdin.read(1).lower()
+        if val == '\x03':
+            sys.exit(1)
+        else:
+            print(val, end=' ', file=sys.stderr, flush=True)
+            return val
+    finally:
+        termios.tcsetattr(fd, termios.TCSADRAIN, old)
+
+def prompt_proceed():
+    print('prompt_proceed? y/n ', file=sys.stderr)
+    char = getch()
+    if char != 'y':
+        print('abort', file=sys.stderr)
+        sys.exit(1)
+
+
+@argh.dispatch_command
 @argh.arg('-p', '--preview')
-def _main(pattern: 'regex to match',
-          replacement: 'replacement for matches',
-          preview: 'show diffs and then exit without prompting for commit' = False,
-          short: 'show shorter diffs' = False,
-          unrestricted: 'process all files, not just code files' = False,
-          no_climb_git_root: 'dont cd upwards until a .git dir is found' = False,
-          yes: 'commit without prompting' = False):
+def agr(pattern: 'regex to match',
+        replacement: 'replacement for matches',
+        preview: 'show diffs and then exit without prompting for commit' = False,
+        short: 'show shorter diffs' = False,
+        unrestricted: 'process all files, not just code files' = False,
+        no_climb: 'dont cd upwards until a .git dir is found' = False,
+        yes: 'commit without prompting' = False,
+        each: 'prompt for y/n at each change site' = False):
     """
 
     like ack or ag, but for search and replace. operates from the root
     of a git repo, and fails if not run within a git repo. shows a preview
     of the replacements to be made, and prompts to continue.
 
-    $ agr '(\w+)_factory' '\1_factory_factory'
+    $ agr '(\w+)_factory' '\\1_factory_factory'
 
     $ agr -h
 
     """
-    if not no_climb_git_root:
+    if not no_climb:
         while True:
             if os.getcwd() == '/':
                 print('failed to find git root')
@@ -63,25 +89,24 @@ def _main(pattern: 'regex to match',
             unchanged = [x for x in re.split(pattern_no_split, line)]
             olds = re.findall(pattern_no_split, line)
             news = [re.sub(pattern, replacement, x) for x in olds]
-            lines[num] = ''.join(sum(zip([''] + news, unchanged), ()))
             if short:
                 print(yellow(path) + ':' + yellow(str(num)) + ': ' + ', '.join('%s => %s' % (red(old), green(new)) for old, new in zip(olds, news)))
             else:
                 old = ''.join(sum(zip([''] + list(map(red, olds)), unchanged), ())).strip()
                 new = ''.join(sum(zip([''] + list(map(green, news)), unchanged), ())).strip()
                 print(yellow(path) + ':' + yellow(str(num)) + ': ' + '%(old)s => %(new)s' % locals())
+            if each:
+                try:
+                    prompt_proceed()
+                except:
+                    continue
+            lines[num] = ''.join(sum(zip([''] + news, unchanged), ()))
         return lines
     updates = [(path, update(path, nums)) for path, nums in matches]
     if not preview:
-        if not yes:
-            print('proceed? y/n ')
-            if pager.getch() != 'y':
-                print('abort')
-                sys.exit(1)
+        if not yes and not each:
+            prompt_proceed()
         for path, lines in updates:
             with open(path, 'w') as f:
                 f.write('\n'.join(lines) + '\n')
             print('updated:', path)
-
-def main():
-    argh.dispatch_command(_main)
