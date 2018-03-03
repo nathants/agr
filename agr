@@ -50,7 +50,7 @@ def agr(pattern: 'regex to match',
     of a git repo, and fails if not run within a git repo. shows a preview
     of the replacements to be made, and prompts to continue.
 
-    $ agr '(\w+)_factory' '\\1_factory_factory'
+    $ agr '(\w+)_factory' '\1_factory_factory'
 
     $ agr -h
 
@@ -85,7 +85,7 @@ def agr(pattern: 'regex to match',
         for num in nums:
             line = lines[num]
             assert re.search(pattern, line), 'python didnt find a match that ag found for %(path)s:%(num)s' % locals()
-            pattern_no_split = re.sub(r'[\(\)]', '', pattern)
+            pattern_no_split = re.sub(r'(?<!\\)[\(\)]', '', pattern)
             unchanged = [x for x in re.split(pattern_no_split, line)]
             olds = re.findall(pattern_no_split, line)
             news = [re.sub(pattern, replacement, x) for x in olds]
@@ -94,7 +94,7 @@ def agr(pattern: 'regex to match',
             else:
                 old = ''.join(sum(zip([''] + list(map(red, olds)), unchanged), ())).strip()
                 new = ''.join(sum(zip([''] + list(map(green, news)), unchanged), ())).strip()
-                print(yellow(path) + ':' + yellow(str(num)) + ': ' + '%(old)s => %(new)s' % locals())
+                print(yellow(path) + ':' + yellow(str(num + 1)) + ': ' + '%(old)s => %(new)s' % locals())
             if each:
                 try:
                     prompt_proceed()
