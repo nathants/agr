@@ -50,7 +50,7 @@ def agr(pattern: 'regex to match',
     of a git repo, and fails if not run within a git repo. shows a preview
     of the replacements to be made, and prompts to continue.
 
-    $ agr '(\w+)_factory' '\1_factory_factory'
+    $ agr '(\w+)_factory' '\\1_factory_factory'
 
     $ agr -h
 
