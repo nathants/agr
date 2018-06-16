@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.6
 import argh
 import itertools
 import os
@@ -8,9 +8,9 @@ import sys
 import termios
 import tty
 
-red    = lambda x: "\033[31m%s\033[0m" % x
-green  = lambda x: "\033[32m%s\033[0m" % x
-yellow = lambda x: "\033[33m%s\033[0m" % x
+red    = lambda x: f'\033[31m{x}\033[0m'
+green  = lambda x: f'\033[32m{x}\033[0m'
+yellow = lambda x: f'\033[33m{x}\033[0m'
 
 def getch():
     fd = sys.stdin.fileno()
@@ -21,7 +21,6 @@ def getch():
         if val == '\x03':
             sys.exit(1)
         else:
-            print(val, end=' ', file=sys.stderr, flush=True)
             return val
     finally:
         termios.tcsetattr(fd, termios.TCSADRAIN, old)
@@ -33,11 +32,12 @@ def prompt_proceed():
         print('abort', file=sys.stderr)
         sys.exit(1)
 
-
 @argh.dispatch_command
 @argh.arg('-p', '--preview')
+@argh.arg('replacement', nargs='?')
 def agr(pattern: 'regex to match',
         replacement: 'replacement for matches',
+        delete: 'rather than substitute replacement, delete the matched line' = False,
         preview: 'show diffs and then exit without prompting for commit' = False,
         short: 'show shorter diffs' = False,
         unrestricted: 'process all files, not just code files' = False,
@@ -55,10 +55,16 @@ def agr(pattern: 'regex to match',
     $ agr -h
 
     """
+    if not (replacement or delete):
+        print('error: must use [replacement] or --delete, see: agr --help ', file=sys.stderr)
+        sys.exit(1)
+    if replacement and delete:
+        print('error: can only use one of [replacement] or --delete, see: agr --help ', file=sys.stderr)
+        sys.exit(1)
     if not no_climb:
         while True:
             if os.getcwd() == '/':
-                print('failed to find git root')
+                print('failed to find git root', file=sys.stderr)
                 sys.exit(1)
             if '.git' in os.listdir():
                 break
@@ -70,43 +76,51 @@ def agr(pattern: 'regex to match',
                    if len(split(line, 1)) == 3
                    for path, num, _ in [split(line, 1)]]
     except subprocess.CalledProcessError:
-        print('no matches')
+        print('no matches', file=sys.stderr)
         sys.exit(1)
     matches = sorted(matches, key=lambda x: x[0])
     matches = itertools.groupby(matches, key=lambda x: x[0])
-    matches = [(path, [int(num) - 1
+    matches = [(path, {int(num) - 1
                        for _, num in nums
-                       if num.isdigit()])
+                       if num.isdigit()})
                for path, nums in matches]
     matches = [(path, nums) for path, nums in matches if nums]
     def update(path, nums):
         with open(path) as f:
-            lines = f.read().splitlines()
-        for num in nums:
-            line = lines[num]
-            assert re.search(pattern, line), 'python didnt find a match that ag found for %(path)s:%(num)s' % locals()
-            pattern_no_split = re.sub(r'(?<!\\)[\(\)]', '', pattern)
-            unchanged = [x for x in re.split(pattern_no_split, line)]
-            olds = re.findall(pattern_no_split, line)
-            news = [re.sub(pattern, replacement, x) for x in olds]
-            if short:
-                print(yellow(path) + ':' + yellow(str(num)) + ': ' + ', '.join('%s => %s' % (red(old), green(new)) for old, new in zip(olds, news)))
-            else:
-                old = ''.join(sum(zip([''] + list(map(red, olds)), unchanged), ())).strip()
-                new = ''.join(sum(zip([''] + list(map(green, news)), unchanged), ())).strip()
-                print(yellow(path) + ':' + yellow(str(num + 1)) + ': ' + '%(old)s => %(new)s' % locals())
-            if each:
-                try:
-                    prompt_proceed()
-                except:
-                    continue
-            lines[num] = ''.join(sum(zip([''] + news, unchanged), ()))
-        return lines
-    updates = [(path, update(path, nums)) for path, nums in matches]
+            for num, line in enumerate(f):
+                if num not in nums:
+                    yield line
+                else:
+                    if not re.search(pattern, line):
+                        print(f'python didnt find a match that ag found for {path}:{num}', file=sys.stderr)
+                    pattern_no_split = re.sub(r'(?<!\\)[\(\)]', '', pattern)
+                    unchanged = [x for x in re.split(pattern_no_split, line)]
+                    olds = re.findall(pattern_no_split, line)
+                    if replacement:
+                        news = [re.sub(pattern, replacement, x) for x in olds]
+                    elif delete:
+                        news = ['DELETED!']
+                        unchanged = ['' for _ in unchanged]
+                    if short:
+                        print(f'{yellow(path)}:{yellow(str(num))}: ' + ', '.join(f'{red(old)} => {green(new)}' for old, new in zip(olds, news)))
+                    else:
+                        old = ''.join(sum(zip([''] + list(map(red, olds)), unchanged), ())).strip()
+                        new = ''.join(sum(zip([''] + list(map(green, news)), unchanged), ())).strip()
+                        print(f'{yellow(path)}:{yellow(str(num + 1))}: {old} => {new}')
+                    if each:
+                        try:
+                            prompt_proceed()
+                        except:
+                            continue
+                    if replacement:
+                        yield ''.join(sum(zip([''] + news, unchanged), ()))
+                    elif delete:
+                        pass
+    updates = [[path, list(update(path, nums))] for path, nums in matches]
     if not preview:
         if not yes and not each:
             prompt_proceed()
         for path, lines in updates:
             with open(path, 'w') as f:
-                f.write('\n'.join(lines) + '\n')
-            print('updated:', path)
+                f.write(''.join(lines))
+            print('updated:', path, file=sys.stderr)

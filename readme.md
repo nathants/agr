@@ -6,7 +6,7 @@ made, and prompts to continue globally or at each change site.
 
 installation methods:
  - `pip3 install https://github.com/nathants/agr@ab822da`
- - `git clone https://github.com/nathants/agr && cd agr && python3 setup.py develop`
+ - `git clone https://github.com/nathants/agr && cd agr && python3.6 setup.py develop`
 
 usage: `agr '(\w+)_factory' '\1_factory_factory'`
 
@@ -14,7 +14,7 @@ usage: `agr -h`
 
 depends on:
  - [silver-search (ag)](https://github.com/ggreer/the_silver_searcher) being available.
- - python3.4+
+ - python3.6+
 
 examples:
 
