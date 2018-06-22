@@ -111,6 +111,7 @@ def agr(pattern: 'regex to match',
                         try:
                             prompt_proceed()
                         except:
+                            yield ''.join(sum(zip([''] + olds, unchanged), ()))
                             continue
                     if replacement:
                         yield ''.join(sum(zip([''] + news, unchanged), ()))
