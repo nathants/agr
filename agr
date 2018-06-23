@@ -11,7 +11,10 @@ import tty
 red    = lambda x: f'\033[31m{x}\033[0m'
 green  = lambda x: f'\033[32m{x}\033[0m'
 yellow = lambda x: f'\033[33m{x}\033[0m'
-deleted = 'DELETED!'
+
+class _deleted:
+    __str__ = lambda _: 'DELETED!'
+deleted = _deleted()
 
 def getch():
     fd = sys.stdin.fileno()
@@ -115,7 +118,7 @@ def agr(pattern: 'regex to match',
                             try:
                                 prompt_proceed()
                                 vals.append(new)
-                            except:
+                            except SystemExit:
                                 vals.append(old)
                         yield ''.join(sum(zip([''] + vals, unchanged), ()))
                     else:
