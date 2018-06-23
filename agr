@@ -11,6 +11,7 @@ import tty
 red    = lambda x: f'\033[31m{x}\033[0m'
 green  = lambda x: f'\033[32m{x}\033[0m'
 yellow = lambda x: f'\033[33m{x}\033[0m'
+deleted = 'DELETED!'
 
 def getch():
     fd = sys.stdin.fileno()
@@ -100,8 +101,7 @@ def agr(pattern: 'regex to match',
                     if replacement:
                         news = [re.sub(pattern, replacement, x) for x in olds]
                     elif delete:
-                        news = ['DELETED!']
-                        unchanged = ['' for _ in unchanged]
+                        news = [deleted]
                     if each:
                         vals = []
                         for i, (old, new) in enumerate(zip(olds, news)):
@@ -124,6 +124,8 @@ def agr(pattern: 'regex to match',
                             print(', '.join(f'{red(old_line)} => {green(new_line)}' for old_line, new_line in zip(olds, news)))
                         else:
                             old_line = ''.join(sum(zip([''] + list(map(red, olds)), unchanged), ())).strip()
+                            if news == [deleted]:
+                                unchanged = ['' for _ in unchanged]
                             new_line = ''.join(sum(zip([''] + list(map(green, news)), unchanged), ())).strip()
                             print(f'{yellow(path)}:{yellow(str(num + 1))}: {old_line} => {new_line}')
                         if replacement:
