@@ -26,8 +26,9 @@ def getch():
         termios.tcsetattr(fd, termios.TCSADRAIN, old)
 
 def prompt_proceed():
-    print('prompt_proceed? y/n ', file=sys.stderr)
+    print('prompt_proceed? y/n', file=sys.stderr, end=' ', flush=True)
     char = getch()
+    print(char, file=sys.stderr)
     if char != 'y':
         print('abort', file=sys.stderr)
         sys.exit(1)
@@ -101,22 +102,34 @@ def agr(pattern: 'regex to match',
                     elif delete:
                         news = ['DELETED!']
                         unchanged = ['' for _ in unchanged]
-                    if short:
-                        print(f'{yellow(path)}:{yellow(str(num))}: ' + ', '.join(f'{red(old)} => {green(new)}' for old, new in zip(olds, news)))
-                    else:
-                        old = ''.join(sum(zip([''] + list(map(red, olds)), unchanged), ())).strip()
-                        new = ''.join(sum(zip([''] + list(map(green, news)), unchanged), ())).strip()
-                        print(f'{yellow(path)}:{yellow(str(num + 1))}: {old} => {new}')
                     if each:
-                        try:
-                            prompt_proceed()
-                        except:
-                            yield ''.join(sum(zip([''] + olds, unchanged), ()))
-                            continue
-                    if replacement:
-                        yield ''.join(sum(zip([''] + news, unchanged), ()))
-                    elif delete:
-                        pass
+                        vals = []
+                        for i, (old, new) in enumerate(zip(olds, news)):
+                            _olds = olds.copy()
+                            _olds[i] = red(old)
+                            _news = olds.copy()
+                            _news[i] = green(new)
+                            old_line = ''.join(sum(zip([''] + list(_olds), unchanged), ())).strip()
+                            new_line = ''.join(sum(zip([''] + list(_news), unchanged), ())).strip()
+                            print(f'{yellow(path)}:{yellow(str(num + 1))}: {old_line} => {new_line}')
+                            try:
+                                prompt_proceed()
+                                vals.append(new)
+                            except:
+                                vals.append(old)
+                        yield ''.join(sum(zip([''] + vals, unchanged), ()))
+                    else:
+                        if short:
+                            print(f'{yellow(path)}:{yellow(str(num))}:', end=' ')
+                            print(', '.join(f'{red(old_line)} => {green(new_line)}' for old_line, new_line in zip(olds, news)))
+                        else:
+                            old_line = ''.join(sum(zip([''] + list(map(red, olds)), unchanged), ())).strip()
+                            new_line = ''.join(sum(zip([''] + list(map(green, news)), unchanged), ())).strip()
+                            print(f'{yellow(path)}:{yellow(str(num + 1))}: {old_line} => {new_line}')
+                        if replacement:
+                            yield ''.join(sum(zip([''] + news, unchanged), ()))
+                        elif delete:
+                            pass
     updates = [[path, list(update(path, nums))] for path, nums in matches]
     if not preview:
         if not yes and not each:
