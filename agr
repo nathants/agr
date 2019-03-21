@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import signal
 import argh
 import itertools
 import os
@@ -30,10 +31,12 @@ def getch():
         termios.tcsetattr(fd, termios.TCSADRAIN, old)
 
 def prompt_proceed():
-    print('prompt_proceed? y/n', file=sys.stderr, end=' ', flush=True)
+    print('prompt_proceed? y/n/q', file=sys.stderr, end=' ', flush=True)
     char = getch()
     print(char, file=sys.stderr)
-    if char != 'y':
+    if char == 'q':
+        os.kill(os.getpid(), signal.SIGTERM)
+    elif char != 'y':
         print('abort', file=sys.stderr)
         sys.exit(1)
 
