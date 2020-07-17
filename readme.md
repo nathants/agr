@@ -7,7 +7,7 @@ made, and prompts to continue globally or at each change site.
 ### install
 
 ```bash
-pip3 install https://github.com/nathants/agr
+python3 -m pip install git+https://github.com/nathants/agr
 ```
 
 ### usage
