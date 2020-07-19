@@ -1,8 +1,16 @@
+## why
+
+repo wide search and replace should be easier.
+
 ## what
 
-like ack or ag, but for search and replace. can climb to the root of a
-git repo before running. shows a preview of the replacements to be
-made, and prompts to continue globally or at each change site.
+like ack or ag, but for search and replace.
+
+can climb to the root of a git repo before running.
+
+shows a preview of the replacements to be made.
+
+prompts to continue globally or at each change site.
 
 ## install
 
