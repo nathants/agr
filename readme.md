@@ -1,4 +1,4 @@
-##### agr
+## agr
 
 like ack or ag, but for search and replace. can climb to the root of a
 git repo before running. shows a preview of the replacements to be
