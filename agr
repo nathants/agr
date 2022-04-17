@@ -59,10 +59,10 @@ def agr(pattern: 'regex to match',
 
     >> agr '(\w+)_factory' '\\1_factory_factory'
     """
-    if not (replacement or delete):
+    if not (replacement is not None or delete):
         print('error: must use [replacement] or --delete, see: agr --help ', file=sys.stderr)
         sys.exit(1)
-    if replacement and delete:
+    if replacement is not None and delete:
         print('error: can only use one of [replacement] or --delete, see: agr --help ', file=sys.stderr)
         sys.exit(1)
     if not no_climb:
@@ -100,7 +100,7 @@ def agr(pattern: 'regex to match',
                     pattern_no_split = re.sub(r'(?<!\\)[\(\)]', '', pattern)
                     unchanged = [x for x in re.split(pattern_no_split, line)]
                     olds = re.findall(pattern_no_split, line)
-                    if replacement:
+                    if replacement is not None:
                         news = [re.sub(pattern, replacement, x) for x in olds]
                     elif delete:
                         news = [deleted]
@@ -130,7 +130,7 @@ def agr(pattern: 'regex to match',
                                 unchanged = ['' for _ in unchanged]
                             new_line = ''.join(sum(zip([''] + list(map(green, news)), unchanged), ())).strip()
                             print(f'{yellow(path)}:{yellow(str(num + 1))}: {old_line} => {new_line}')
-                        if replacement:
+                        if replacement is not None:
                             yield ''.join(sum(zip([''] + news, unchanged), ()))
                         elif delete:
                             pass
