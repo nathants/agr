@@ -64,3 +64,4 @@ optional arguments:
   -y, --yes           commit without prompting (default: False)
   -e, --each          prompt for y/n at each change site (default: False)
 ```
+
