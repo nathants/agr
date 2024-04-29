@@ -57,7 +57,7 @@ def agr(pattern: 'regex to match',
     git repo before running. shows a preview of the replacements to be
     made, and prompts to continue globally or at each change site.
 
-    >> agr '(\w+)_factory' '\\1_factory_factory'
+    >> agr '(\\w+)_factory' '\\1_factory_factory'
     """
     if not (replacement is not None or delete):
         print('error: must use [replacement] or --delete, see: agr --help ', file=sys.stderr)
