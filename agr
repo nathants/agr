@@ -76,7 +76,7 @@ def agr(pattern: 'regex to match',
     split = re.compile(r':(\d+):').split
     try:
         matches = [(path, num)
-                   for line in subprocess.check_output(['ag'] + (['-u'] if unrestricted else []) + ['-s', pattern]).decode('utf-8').strip().splitlines()
+                   for line in subprocess.check_output(['ag', '--ignore', '*.js.map'] + (['-u'] if unrestricted else []) + ['-s', pattern]).decode('utf-8').strip().splitlines()
                    if len(split(line, 1)) == 3
                    for path, num, _ in [split(line, 1)]]
     except subprocess.CalledProcessError:
