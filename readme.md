@@ -1,36 +1,36 @@
-# agr
+# Agr
 
-## why
+## Why
 
-repo wide search and replace should be easier.
+Repo wide search and replace should be easier.
 
-## what
+## What
 
-like ack or ag, but for search and replace.
+Like ack or ag, but for search and replace.
 
-can climb to the root of a git repo before running.
+Can climb to the root of a git repo before running.
 
-shows a preview of the replacements to be made.
+Shows a preview of the replacements to be made.
 
-prompts to continue globally or at each change site.
+Prompts to continue globally or at each change site.
 
-## install
+## Install
 
 ```bash
 python3 -m pip install git+https://github.com/nathants/agr
 ```
 
-## usage
+## Usage
 
 ```bash
 agr '(\w+)_factory' '\1_factory_factory'
 ```
 
-## dependencies
- - [silver-search (ag)](https://github.com/ggreer/the_silver_searcher)
- - [python3](https://python.org)
+## Dependencies
+ - [Silver-search (ag)](https://github.com/ggreer/the_silver_searcher)
+ - [Python3](https://python.org)
 
-## examples
+## Examples
 
 ```
 $ agr '(\w+)_factory' '\1_factory_factory'
@@ -64,4 +64,3 @@ optional arguments:
   -y, --yes           commit without prompting (default: False)
   -e, --each          prompt for y/n at each change site (default: False)
 ```
-
