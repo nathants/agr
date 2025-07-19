@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# search and replace tool that climbs to git root and shows preview before applying changes
 import signal
 import argh
 import itertools
@@ -40,7 +41,6 @@ def prompt_proceed():
         print('abort', file=sys.stderr)
         sys.exit(1)
 
-@argh.dispatch_command
 @argh.arg('-p', '--preview')
 @argh.arg('replacement', nargs='?')
 def agr(pattern: 'regex to match',
@@ -142,3 +142,9 @@ def agr(pattern: 'regex to match',
             with open(path, 'w') as f:
                 f.write(''.join(lines))
             print('updated:', path, file=sys.stderr)
+
+def main():
+    argh.dispatch_command(agr)
+
+if __name__ == '__main__':
+    main()

@@ -9,6 +9,11 @@ setuptools.setup(
     author_email='me@nathants.com',
     url='http://github.com/nathants/agr',
     install_requires=['argh'],
-    scripts=['agr'],
+    packages=['agr'],
+    entry_points={
+        'console_scripts': [
+            'agr=agr.main:main',
+        ],
+    },
     description='agr',
 )
